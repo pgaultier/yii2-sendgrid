@@ -546,5 +546,14 @@ class Message extends BaseMessage
         return $emails;
     }
 
+    public function send(MailerInterface $mailer = null)
+    {
+        $result = parent::send($mailer);
+        if ($this->attachmentsTmdDir !== null) {
+            //TODO: clean up tmpdir after ourselves
+        }
+        return $result;
+    }
+
 
 }
