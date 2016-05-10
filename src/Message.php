@@ -82,6 +82,11 @@ class Message extends BaseMessage
     protected $attachments = [];
 
     /**
+     * @var string temporary attachment directory
+     */
+    protected $attachmentsTmdDir;
+
+    /**
      * @var array
      */
     protected $uniqueArguments = [];
@@ -100,6 +105,11 @@ class Message extends BaseMessage
      * @var array
      */
     protected $templateModel;
+
+    /**
+     * @var array substitution pairs used to mark expandable vars in template mode https://github.com/sendgrid/sendgrid-php#setsubstitutions
+     */
+    public $substitutionsPairs = ['{', '}'];
 
     /**
      * @inheritdoc
@@ -352,7 +362,15 @@ class Message extends BaseMessage
      */
     public function getTemplateModel()
     {
-        return $this->templateModel;
+        $templateModel = [];
+        list($left, $right) = $this->substitutionsPairs;
+        foreach ($this->templateModel as $key => $value) {
+            if (is_array($value) === false) {
+                $value = [$value];
+            }
+            $templateModel[$left.$key.$right] = $value;
+        }
+        return $templateModel;
     }
 
     /**
@@ -379,7 +397,7 @@ class Message extends BaseMessage
      */
     public function getAttachments()
     {
-        return empty($this->attachments) ? null : $this->attachments;
+        return empty($this->attachments) ? [] : $this->attachments;
     }
 
     /**
@@ -387,22 +405,37 @@ class Message extends BaseMessage
      */
     public function attach($fileName, array $options = [])
     {
-        throw new NotSupportedException();
         $attachment = [
-            'Content' => base64_encode(file_get_contents($fileName))
+            'File' => $fileName
         ];
         if (!empty($options['fileName'])) {
             $attachment['Name'] = $options['fileName'];
         } else {
             $attachment['Name'] = pathinfo($fileName, PATHINFO_BASENAME);
         }
-        if (!empty($options['contentType'])) {
-            $attachment['ContentType'] = $options['contentType'];
-        } else {
-            $attachment['ContentType'] = 'application/octet-stream';
-        }
         $this->attachments[] = $attachment;
         return $this;
+    }
+
+    /**
+     * @return string temporary directory to store contents
+     * @since XXX
+     * @throws InvalidConfigException
+     */
+    protected function getTempDir()
+    {
+        if ($this->attachmentsTmdDir === null) {
+            $uid = uniqid();
+            $this->attachmentsTmdDir = Yii::getAlias('@app/runtime/'.$uid.'/');
+            $status = true;
+            if (file_exists($this->attachmentsTmdDir) === false) {
+                $status = mkdir($this->attachmentsTmdDir, 0755, true);
+            }
+            if ($status === false) {
+                throw new InvalidConfigException('Directory \''.$this->attachmentsTmdDir.'\' cannot be created');
+            }
+        }
+        return $this->attachmentsTmdDir;
     }
 
     /**
@@ -410,21 +443,14 @@ class Message extends BaseMessage
      */
     public function attachContent($content, array $options = [])
     {
-        throw new NotSupportedException();
-        $attachment = [
-            'Content' => base64_encode($content)
-        ];
-        if (!empty($options['fileName'])) {
-            $attachment['Name'] = $options['fileName'];
-        } else {
+        if (!isset($options['fileName']) || empty($options['fileName'])) {
             throw new InvalidParamException('Filename is missing');
         }
-        if (!empty($options['contentType'])) {
-            $attachment['ContentType'] = $options['contentType'];
-        } else {
-            $attachment['ContentType'] = 'application/octet-stream';
+        $filePath = $this->getTempDir().'/'.$options['fileName'];
+        if (file_put_contents($filePath, $content) === false) {
+            throw new InvalidConfigException('Cannot write file \''.$filePath.'\'');
         }
-        $this->attachments[] = $attachment;
+        $this->attach($filePath, $options);
         return $this;
     }
 
@@ -433,19 +459,13 @@ class Message extends BaseMessage
      */
     public function embed($fileName, array $options = [])
     {
-        throw new NotSupportedException();
         $embed = [
-            'Content' => base64_encode(file_get_contents($fileName))
+            'File' => $fileName
         ];
         if (!empty($options['fileName'])) {
             $embed['Name'] = $options['fileName'];
         } else {
             $embed['Name'] = pathinfo($fileName, PATHINFO_BASENAME);
-        }
-        if (!empty($options['contentType'])) {
-            $embed['ContentType'] = $options['contentType'];
-        } else {
-            $embed['ContentType'] = 'application/octet-stream';
         }
         $embed['ContentID'] = 'cid:' . uniqid();
         $this->attachments[] = $embed;
@@ -457,23 +477,15 @@ class Message extends BaseMessage
      */
     public function embedContent($content, array $options = [])
     {
-        throw new NotSupportedException();
-        $embed = [
-            'Content' => base64_encode($content)
-        ];
-        if (!empty($options['fileName'])) {
-            $embed['Name'] = $options['fileName'];
-        } else {
-            throw new InvalidParamException('Filename is missing');
+        if (isset($options['fileName']) === false || empty($options['fileName'])) {
+            throw new InvalidParamException('fileName is missing');
         }
-        if (!empty($options['contentType'])) {
-            $embed['ContentType'] = $options['contentType'];
-        } else {
-            $embed['ContentType'] = 'application/octet-stream';
+        $filePath = $this->getTempDir().'/'.$options['fileName'];
+        if (file_put_contents($filePath, $content) === false) {
+            throw new InvalidConfigException('Cannot write file \''.$filePath.'\'');
         }
-        $embed['ContentID'] = 'cid:' . uniqid();
-        $this->attachments[] = $embed;
-        return $embed['ContentID'];
+        $cid = $this->embed($filePath, $options);
+        return $cid;
     }
 
     /**

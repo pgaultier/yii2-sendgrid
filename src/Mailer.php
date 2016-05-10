@@ -103,6 +103,10 @@ class Mailer extends BaseMailer
                 list($key, $value) = each($header);
                 $sendGridMail->addHeader($key, $value);
             }
+            foreach($message->getAttachments() as $attachment) {
+                $cid = isset($attachment['ContentID']) ? $attachment['ContentID'] : null;
+                $sendGridMail->addAttachment($attachment['File'], $attachment['Name'], $cid);
+            }
 
             $templateId = $message->getTemplateId();
             if ($templateId === null) {
@@ -113,6 +117,16 @@ class Mailer extends BaseMailer
                 $data = $message->getTextBody();
                 if ($data !== null) {
                     $sendGridMail->setText($data);
+                }
+            } else {
+                $sendGridMail->setTemplateId($templateId);
+                // trigger html template
+                $sendGridMail->setHtml(' ');
+                // trigger text template
+                $sendGridMail->setText(' ');
+                $templateModel = $message->getTemplateModel();
+                if (empty($templateModel) === false) {
+                    $sendGridMail->setSubstitutions($message->getTemplateModel());
                 }
             }
             $result = $client->send($sendGridMail);

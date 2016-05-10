@@ -178,62 +178,39 @@ class MessageTest extends TestCase
         $this->assertEquals(1234, $message->getTemplateId());
 
         $message->setTemplateModel(['a' => 'b']);
-        $this->assertArrayHasKey('a', $message->getTemplateModel());
-        $this->assertEquals('b', $message->getTemplateModel()['a']);
+        $this->assertArrayHasKey('{a}', $message->getTemplateModel());
+        $this->assertEquals(['b'], $message->getTemplateModel()['{a}']);
 
-        $this->assertNull($message->getHeaders());
+        $this->assertEmpty($message->getHeaders());
         $message->addHeader(['X-Header' => 'test']);
         $this->assertArrayHasKey('X-Header', $message->getHeaders()[0]);
         $message->addHeader(['X-Secondary' => 'test']);
         $this->assertArrayHasKey('X-Header', $message->getHeaders()[0]);
         $this->assertArrayHasKey('X-Secondary', $message->getHeaders()[1]);
 
-        /*
-        $this->assertNull($message->getAttachments());
+        $this->assertEmpty($message->getAttachments());
         $message->attach(__FILE__, ['fileName' => 'file.php', 'contentType' => 'text/plain']);
         $this->assertEquals('file.php', $message->getAttachments()[0]['Name']);
-        $this->assertEquals('text/plain', $message->getAttachments()[0]['ContentType']);
-        $this->assertEquals(base64_encode(file_get_contents(__FILE__)), $message->getAttachments()[0]['Content']);
+        $this->assertEquals(__FILE__, $message->getAttachments()[0]['File']);
 
         $message->attach(__FILE__);
         $this->assertEquals('MessageTest.php', $message->getAttachments()[1]['Name']);
-        $this->assertEquals('application/octet-stream', $message->getAttachments()[1]['ContentType']);
-        $this->assertEquals(base64_encode(file_get_contents(__FILE__)), $message->getAttachments()[1]['Content']);
+        $this->assertEquals(base64_encode(file_get_contents(__FILE__)), base64_encode(file_get_contents($message->getAttachments()[1]['File'])));
 
         $message->attachContent('plop', ['fileName' => 'file.php', 'contentType' => 'text/plain']);
         $this->assertEquals('file.php', $message->getAttachments()[2]['Name']);
-        $this->assertEquals('text/plain', $message->getAttachments()[2]['ContentType']);
-        $this->assertEquals(base64_encode('plop'), $message->getAttachments()[2]['Content']);
-
-        $message->attachContent('plop', ['fileName' => 'file.php']);
-        $this->assertEquals('file.php', $message->getAttachments()[3]['Name']);
-        $this->assertEquals('application/octet-stream', $message->getAttachments()[3]['ContentType']);
-        $this->assertEquals(base64_encode('plop'), $message->getAttachments()[3]['Content']);
+        $this->assertEquals(base64_encode('plop'), base64_encode(file_get_contents($message->getAttachments()[2]['File'])));
 
         $cid = $message->embed(__FILE__, ['fileName' => 'file.php', 'contentType' => 'text/plain']);
-        $this->assertEquals('file.php', $message->getAttachments()[4]['Name']);
-        $this->assertEquals('text/plain', $message->getAttachments()[4]['ContentType']);
-        $this->assertEquals(base64_encode(file_get_contents(__FILE__)), $message->getAttachments()[4]['Content']);
-        $this->assertEquals($cid, $message->getAttachments()[4]['ContentID']);
+        $this->assertEquals('file.php', $message->getAttachments()[3]['Name']);
+        $this->assertEquals(base64_encode(file_get_contents(__FILE__)), base64_encode(file_get_contents($message->getAttachments()[3]['File'])));
+        $this->assertEquals($cid, $message->getAttachments()[3]['ContentID']);
 
         $cid = $message->embed(__FILE__);
-        $this->assertEquals('MessageTest.php', $message->getAttachments()[5]['Name']);
-        $this->assertEquals('application/octet-stream', $message->getAttachments()[5]['ContentType']);
-        $this->assertEquals(base64_encode(file_get_contents(__FILE__)), $message->getAttachments()[5]['Content']);
-        $this->assertEquals($cid, $message->getAttachments()[5]['ContentID']);
+        $this->assertEquals('MessageTest.php', $message->getAttachments()[4]['Name']);
+        $this->assertEquals(base64_encode(file_get_contents(__FILE__)), base64_encode(file_get_contents($message->getAttachments()[4]['File'])));
+        $this->assertEquals($cid, $message->getAttachments()[4]['ContentID']);
 
-        $cid = $message->embedContent('plop', ['fileName' => 'file.php', 'contentType' => 'text/plain']);
-        $this->assertEquals('file.php', $message->getAttachments()[6]['Name']);
-        $this->assertEquals('text/plain', $message->getAttachments()[6]['ContentType']);
-        $this->assertEquals(base64_encode('plop'), $message->getAttachments()[6]['Content']);
-        $this->assertEquals($cid, $message->getAttachments()[6]['ContentID']);
-
-        $cid = $message->embedContent('plop', ['fileName' => 'file.php']);
-        $this->assertEquals('file.php', $message->getAttachments()[7]['Name']);
-        $this->assertEquals('application/octet-stream', $message->getAttachments()[7]['ContentType']);
-        $this->assertEquals(base64_encode('plop'), $message->getAttachments()[7]['Content']);
-        $this->assertEquals($cid, $message->getAttachments()[7]['ContentID']);
-        */
     }
 
     public function testAttachException()
@@ -283,11 +260,12 @@ class MessageTest extends TestCase
     public function testTemplateSend()
     {
         // allow disabling real tests
-        if (POSTMARK_TEST_SEND === true) {
+        if (SENDGRID_TEST_SEND === true) {
             $message = $this->createTestMessage();
-            $message->setFrom(POSTMARK_FROM)
-                ->setTo(POSTMARK_TO)
-                ->setTemplateId(POSTMARK_TEMPLATE)
+            $message->setSubject('Yii sendgrid test message with template');
+            $message->setFrom(SENDGRID_FROM)
+                ->setTo(SENDGRID_TO)
+                ->setTemplateId(SENDGRID_TEMPLATE)
                 ->setTemplateModel([
                     'templateName' => 'test',
                     'userName' => 'Mr test'

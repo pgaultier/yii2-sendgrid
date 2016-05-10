@@ -11,12 +11,12 @@ $_SERVER['SCRIPT_FILENAME'] = __FILE__;
 require_once(__DIR__ . '/../vendor/autoload.php');
 require_once(__DIR__ . '/../vendor/yiisoft/yii2/Yii.php');
 
-define('SENDGRID_FROM', 'reply@sweelix.io');
-define('SENDGRID_TOKEN', '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');
-define('SENDGRID_TO', 'pgaultier@sweelix.net');
-define('SENDGRID_TEMPLATE', 'd3a17530-1b94-419d-b773-f996a700c5f0');
+define('SENDGRID_FROM', '<FROM>');
+define('SENDGRID_TOKEN', '<SENDGRID_TOKEN>');
+define('SENDGRID_TO', '<TO>');
+define('SENDGRID_TEMPLATE', '<SENDGRID_TEST_TEMPLATE_ID>');
 
-define('SENDGRID_TEST_SEND', true);
+define('SENDGRID_TEST_SEND', false);
 
 
 Yii::setAlias('@tests/unit', __DIR__ . '/unit');
