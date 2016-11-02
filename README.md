@@ -39,7 +39,7 @@ return [
     'components' => [
         'mailer' => [
             'class' => 'sweelix\sendgrid\Mailer',
-            'token' => '<your postmark token>',
+            'token' => '<your sendgrid token>',
         ],
     ],
 ];
