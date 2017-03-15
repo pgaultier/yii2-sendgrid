@@ -1,6 +1,11 @@
 Sendgrid Yii2 Change Log
 ========================
 
+1.0.2 March 15, 2017
+--------------------
+ 
+ - Chg: update dependencies 
+
 1.0.1 December 6, 2016
 ----------------------
 
