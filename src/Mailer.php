@@ -5,7 +5,7 @@
  * PHP version 5.6+
  *
  * @author Philippe Gaultier <pgaultier@sweelix.net>
- * @copyright 2010-2016 Philippe Gaultier
+ * @copyright 2010-2017 Philippe Gaultier
  * @license http://www.sweelix.net/license license
  * @version XXX
  * @link http://www.sweelix.net
@@ -26,7 +26,7 @@ use yii\mail\BaseMailer;
  * This component allow user to send an email
  *
  * @author Philippe Gaultier <pgaultier@sweelix.net>
- * @copyright 2010-2016 Philippe Gaultier
+ * @copyright 2010-2017 Philippe Gaultier
  * @license http://www.sweelix.net/license license
  * @version XXX
  * @link http://www.sweelix.net
