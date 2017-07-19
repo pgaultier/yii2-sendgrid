@@ -39,6 +39,11 @@ class Message extends BaseMessage
     /**
      * @var string|array from
      */
+    protected $charset = 'UTF-8';
+    
+    /**
+     * @var string|array from
+     */
     protected $from;
 
     /**
@@ -116,7 +121,7 @@ class Message extends BaseMessage
      */
     public function getCharset()
     {
-        throw new NotSupportedException();
+        return $this->charset;
     }
 
     /**
@@ -124,7 +129,7 @@ class Message extends BaseMessage
      */
     public function setCharset($charset)
     {
-        throw new NotSupportedException();
+        $this->charset = $charset;
     }
 
     /**
