@@ -107,7 +107,7 @@ class Mailer extends BaseMailer
                 $cid = isset($attachment['ContentID']) ? $attachment['ContentID'] : null;
                 $sendGridMail->addAttachment($attachment['File'], $attachment['Name'], $cid);
             }
-            foreach($message->getUniqueArguments as $key=>$value){
+            foreach($message->getUniqueArguments() as $key=>$value){
                 $sendGridMail->addUniqueArg($key,$value);
             }
 
