@@ -1,5 +1,5 @@
 {
-    "name": "sweelix/yii2-sendgrid",
+    "name": "miradnan/yii2-sendgrid",
     "description": "PHP 5.6+ Sendgrid integration for the Yii framework",
     "keywords": ["yii2", "sendgrid", "mail", "email", "mailer"],
     "type": "yii2-extension",
